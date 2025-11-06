@@ -4,6 +4,7 @@
 	import { createTicker } from '$lib/scripts/scroller';
 	import { fetchNowPlaying } from '$lib/scripts/music';
 	import type { NowPlaying } from '$lib/scripts/music';
+	import { fetchOnline } from '$lib/scripts/lanyard';
 
 	let song: NowPlaying = {
 		nowPlaying: false,
@@ -19,10 +20,14 @@
 	let titleTicker: ReturnType<typeof createTicker> | undefined;
 	let artistTicker: ReturnType<typeof createTicker> | undefined;
 
+	let online = false;
+
 	onMount(() => {
-		initSnow()
+		initSnow();
 		updateSong();
+		updateStatus();
 		const interval = setInterval(updateSong, 5000);
+		const interval2 = setInterval(updateStatus, 5000);
 		return () => {
 			clearInterval(interval);
 			titleTicker?.stop();
@@ -41,6 +46,11 @@
 
 		titleTicker.start();
 		artistTicker.start();
+	}
+
+	async function updateStatus() {
+		const status = await fetchOnline();
+		online = status.online;
 	}
 
 	function timeAgo(date: string | number | null) {
@@ -64,7 +74,10 @@
 <svelte:head>
 	<title>Luni's Den</title>
 	<meta name="description" content="My website and blog." />
-	<meta name="keywords" content="luni, lunarii_xx, JS, JavaScript, discord, nes, emulators, 90s, pixels">
+	<meta
+		name="keywords"
+		content="luni, lunarii_xx, JS, JavaScript, discord, nes, emulators, 90s, pixels"
+	/>
 </svelte:head>
 
 <div id="wrapper">
@@ -75,6 +88,27 @@
 			<tr>
 				<td id="menutd" style="max-width: 225px">
 					<div class="box" style="margin-bottom: 10px;">links will go here</div>
+					<div
+						class="box centerbox"
+						style="margin-top: 10px; display: flex; justify-content: center; align-items: baseline; padding-bottom: 5px; padding-top: 5px;"
+					>
+						<span>I'm</span>
+						&nbsp;
+						<h2
+							id="status"
+							style="
+            					font-size: 23px;
+           						margin: 0;
+            					color: {online ? 'lime' : 'red'};
+            					text-shadow:0 0 10px #04ffd518, 0 0 20px #00ffee13, 0 0 30px #e600002f,
+                        		0 0 40px #00e6b200, 0 0 50px #e600003d, 0 0 60px #e6000029,
+                        		0 0 70px #e6000057;
+        					"
+						>
+							{online ? 'Online!' : 'Offline!'}
+						</h2>
+					</div>
+
 					<div class="box" style="margin-top: 10px; margin-bottom: 10px;">
 						<div class={song.nowPlaying ? 'blob' : 'inblob'} id="pulser"></div>
 						<b>{song.nowPlaying ? 'Currently Playing:' : 'Last Song:'}</b>
@@ -100,9 +134,6 @@
 								Played {timeAgo(song.playedAt)}
 							</div>
 						{/if}
-					</div>
-					<div class="box" style="margin-top: 10px; margin-bottom: 10px;">
-						online/offline go here
 					</div>
 				</td>
 				<td id="maintd">
