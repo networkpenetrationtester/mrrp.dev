@@ -11,16 +11,6 @@ body {
 	-webkit-font-smoothing: none;
 }
 
-#fps {
-	position: fixed;
-	left: 0;
-	top: 0;
-	color: lime;
-	outline: black;
-	text-shadow: none;
-	font-family: Digital;
-}
-
 #overlay {
 	position: fixed;
 	inset: 0;
