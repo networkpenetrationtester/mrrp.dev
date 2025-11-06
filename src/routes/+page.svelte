@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { initSnow } from '$lib/scripts/snow';
+	import { onMount, onDestroy } from 'svelte';
+	import { createTicker } from '$lib/scripts/scroller';
 	import { fetchNowPlaying } from '$lib/scripts/music';
 	import type { NowPlaying } from '$lib/scripts/music';
 
@@ -13,15 +13,32 @@
 		playedAt: null
 	};
 
+	let displayedTitle = '';
+	let displayedArtist = '';
+	let titleTicker: ReturnType<typeof createTicker> | undefined;
+	let artistTicker: ReturnType<typeof createTicker> | undefined;
+
 	onMount(() => {
-		initSnow();
 		updateSong();
 		const interval = setInterval(updateSong, 5000);
-		return () => clearInterval(interval);
+		return () => {
+			clearInterval(interval);
+			titleTicker?.stop();
+			artistTicker?.stop();
+		};
 	});
 
 	async function updateSong() {
 		song = await fetchNowPlaying();
+
+		titleTicker?.stop();
+		artistTicker?.stop();
+
+		titleTicker = createTicker(song.title, (val) => (displayedTitle = val), 16);
+		artistTicker = createTicker(song.artist, (val) => (displayedArtist = val), 16);
+
+		titleTicker.start();
+		artistTicker.start();
 	}
 
 	function timeAgo(date: string | number | null) {
@@ -38,7 +55,6 @@
 		const days = Math.floor(hours / 24);
 		if (days < 365) return `${days} days ago`;
 		const years = Math.floor(days / 365);
-		console.log(seconds + ', ' + minutes + ', ' + hours + ', ' + days + ', ' + years + ', ' + date);
 		return `${years} years ago`;
 	}
 </script>
@@ -50,19 +66,24 @@
 		<tbody>
 			<tr>
 				<td id="menutd" style="max-width: 225px">
-					<div class="box" style="margin-bottom: 10px;">
-						links will go here
-					</div>
+					<div class="box" style="margin-bottom: 10px;">links will go here</div>
 					<div class="box" style="margin-top: 10px; margin-bottom: 10px;">
 						<div class={song.nowPlaying ? 'blob' : 'inblob'} id="pulser"></div>
 						<b>{song.nowPlaying ? 'Currently Playing:' : 'Last Song:'}</b>
 
 						<a href={song.url} target="_blank" id="songlink">
 							<div id="musicbox">
-								<!-- svelte-ignore a11y_missing_attribute -->
-								<img src={song.image} width="50" height="50" id="albumcover" />
-								<span id="songname">{song.title}</span>
-								<span id="artist">{song.artist}</span>
+								<img
+									src={song.image}
+									width="50"
+									height="50"
+									id="albumcover"
+									alt="Album cover for {song.title}"
+								/>
+								<div id="songtext">
+									<span id="songname">{displayedTitle}</span>
+									<span id="artist">{displayedArtist}</span>
+								</div>
 							</div>
 						</a>
 
@@ -72,18 +93,16 @@
 							</div>
 						{/if}
 					</div>
-					<div class="box" style="margin-top: 10px; margin-bottom: 10px;">online/offline go here</div>
+					<div class="box" style="margin-top: 10px; margin-bottom: 10px;">
+						online/offline go here
+					</div>
 				</td>
 				<td id="maintd">
 					<div class="box" id="mainbox">
 						I decided to wipe my old website, as I was not happy with it. I will be working on this
-						over a good while, if you wish to check back later ;D <br><br>
+						over a good while, if you wish to check back later ;D <br /><br />
 						I am tweaking this A LOT. In the meantime, have kitty.
-						<img
-							src="./images/kitty.jpg"
-							alt="Cat"
-							style="max-width:30%; height:auto;"
-						/>
+						<img src="./images/kitty.jpg" alt="Cat" style="max-width:30%; height:auto;" />
 					</div>
 					<div class="box" id="blogbox"></div>
 				</td>
