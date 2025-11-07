@@ -22,6 +22,8 @@
 
 	let online = false;
 
+	const currentYear = new Date().getFullYear();
+
 	onMount(() => {
 		initSnow();
 		updateSong();
@@ -148,4 +150,14 @@
 			</tr>
 		</tbody>
 	</table>
+	<footer class="footer">
+		<p>
+			Heavily inspired by
+			<a href="https://dimden.dev" target="_blank" rel="noopener noreferrer">
+				<span style="color: #2ba6b2;">dimden</span>’s website!
+			</a>
+		</p>
+		<p>(c) 2024-{currentYear} luni. All Rights Reserved.</p>
+		<p><a href="mailto:mgmt@mrrp.dev" style="color: #f58122;">mgmt@mrrp.dev</a></p>
+	</footer>
 </div>
