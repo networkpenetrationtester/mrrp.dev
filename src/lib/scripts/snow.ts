@@ -5,6 +5,12 @@ export function initSnow() {
 	const isWinter = [10, 11, 0, 1].includes(new Date().getMonth());
 	if (!isWinter) return; // Exit if not winter
 
+	// Prevent duplicate snow containers
+	const existing = document.getElementById('snow');
+	if (existing) {
+		return { stopSnow: () => existing.remove() };
+	}
+
 	// Create a container div for the snow effect
 	const snowDiv = document.createElement('div');
 	snowDiv.id = 'snow';
